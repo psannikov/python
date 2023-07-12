@@ -61,10 +61,10 @@ async def main(ids):
 asyncio.run(main(vacancy_ids))
 
 table_columns = ['company_name', 'position', 'job_description', 'key_skills']
-df = pd.DataFrame(data=vacancyDetailInfo,columns=table_columns,index=None)
+df = pd.DataFrame(data=vacancyDetailInfo, columns=table_columns, index=None)
 
 connection = sqlite3.connect(DB_NAME)
-df.to_sql(TABLE_NAME,connection,if_exists='replace',index=False)
+df.to_sql(TABLE_NAME,connection, if_exists='replace', index=False)
 connection.close()
 
 print(f'Создана таблица {TABLE_NAME} и добавлено {len(vacancyDetailInfo)}')
