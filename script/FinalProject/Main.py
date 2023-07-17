@@ -5,7 +5,7 @@ from FinalProject.Downloader import Downloader
 from FinalProject.EgrulWorker import EgrulWorker
 from FinalProject.HHApiWorker import HHApiWorker
 
-#Константы, перенести в конфиг файл
+# Константы, перенести в конфиг файл
 URL = 'https://sharedby.blomp.com/u3T0GN'
 FILENAME = 'egrul.json.zip'
 ENDPOINT = 'https://api.hh.ru/'
@@ -14,33 +14,32 @@ TABLE_NAME_COMPANIES = 'companies'
 TABLE_NAME_VACANCIES = 'vacancies'
 TABLE_NAME_SKILLS = 'skills'
 
-#Реализовать проверку наличия и актуальности файла если он есть и актуален повторная загрузка не нужна
-def checkFileAlreadyDownload(filename):
+
+def check_file_already_download(filename):
     return os.path.isfile(filename)
 
-if checkFileAlreadyDownload(FILENAME):
+
+if check_file_already_download(FILENAME):
     print("Файл уже загружен, загрузка не требуется")
 else:
     print("Файл не загружен, будет выполнена загрузка файла")
-    #Создаем загрузчик файлов и загружаем данные
+    # Создаем загрузчик файлов и загружаем данные
     loader = Downloader(URL)
+    loader.download_file(FILENAME)
     data = loader.download_data()
     if data:
         loader.save_to_file(data, FILENAME)
         print(f'Данные успешно загружены в файл {FILENAME}')
     else:
         print(f'Не удалось загрузить данные')
-#Читаем закачанный файл и ищем в нем нужную информацию
-egrulParse = EgrulWorker(FILENAME)
-egrulParse.prepareJsonDataToDf()
-#Загружаем информацию с HH
-hhApiWorker = HHApiWorker(ENDPOINT)
-hhApiWorker.getAllVacancyID()
-hhApiWorker.prepareVacancyInfo()
-dbWorker = DBWorker(DB_NAME)
-dbWorker.insertDfToDB(TABLE_NAME_COMPANIES, egrulParse.dfCompanies)
-dbWorker.insertDfToDB(TABLE_NAME_VACANCIES, hhApiWorker.dfVacancy)
-dbWorker.insertDfToDB(TABLE_NAME_SKILLS, hhApiWorker.dfSkills)
-
-
-
+# Читаем закачанный файл и ищем в нем нужную информацию
+egrul_parse = EgrulWorker(FILENAME)
+egrul_parse.prepare_json_data_to_df()
+# Загружаем информацию с HH
+hh_api_worker = HHApiWorker(ENDPOINT)
+hh_api_worker.get_all_vacancy_id()
+hh_api_worker.prepare_vacancy_info()
+db_worker = DBWorker(DB_NAME)
+db_worker.insert_df_to_db(TABLE_NAME_COMPANIES, egrul_parse.df_companies)
+db_worker.insert_df_to_db(TABLE_NAME_VACANCIES, hh_api_worker.df_vacancy)
+db_worker.insert_df_to_db(TABLE_NAME_SKILLS, hh_api_worker.df_skills)
