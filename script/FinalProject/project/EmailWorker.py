@@ -4,16 +4,23 @@ from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
 
 class EmailWorker:
 
-    SENDER_EMAIL = 'sannikovpv.87@yandex.ru'
-    RECEIVER_EMAIL = 'psannikov87@gmail.com'
-    SMTP_SERVER = 'smtp.yandex.ru'
-    PORT = 465
-    LOGIN = 'sannikovpv.87'
-    PASSWORD = "iwuaqdxbximunilr"
-    message = MIMEMultipart()
+    def __init__(self, config):
+        home_directory = os.path.expanduser( '~' )
+        project_path = os.path.join(home_directory, 'project')
+        self.SENDER_EMAIL = config['EmailWorker']['SENDER_EMAIL']
+        self.RECEIVER_EMAIL = config['EmailWorker']['RECEIVER_EMAIL']
+        self.SMTP_SERVER = config['EmailWorker']['SMTP_SERVER']
+        self.PORT = int(config['EmailWorker']['PORT'])
+        self.LOGIN = config['EmailWorker']['LOGIN']
+        self.PASSWORD = config['EmailWorker']['PASSWORD']
+        self.message = MIMEMultipart()
+        self.TOP_SKILL_IN_ALL_VACANCY = os.path.join(project_path, config['SQLWorker']['TOP_SKILL_IN_ALL_VACANCY'])
+        self.TOP_SKILL_IN_VACANCY_BY_INDUSTRY_ID = os.path.join(project_path, config['SQLWorker']['TOP_SKILL_IN_VACANCY_BY_INDUSTRY_ID'])
+        self.TOP_SKILL_IN_VACANCY_FILTER_COMPANIES = os.path.join(project_path, config['SQLWorker']['TOP_SKILL_IN_VACANCY_FILTER_COMPANIES'])
 
     def prepareMessage(self):
         self.message = MIMEMultipart()
@@ -41,7 +48,7 @@ class EmailWorker:
             </html>
             """
         self.message.attach(MIMEText(html, 'html', 'utf-8'))
-        filenames = ['top10all.xlsx','top10industry.xlsx','top10okved.xlsx']
+        filenames = [self.TOP_SKILL_IN_ALL_VACANCY, self.TOP_SKILL_IN_VACANCY_BY_INDUSTRY_ID, self.TOP_SKILL_IN_VACANCY_FILTER_COMPANIES]
         for filename in filenames:
             with open(filename, "rb") as attachment:
                 part = MIMEBase("application", "octet-stream")

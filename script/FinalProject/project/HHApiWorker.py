@@ -5,10 +5,6 @@ from time import sleep
 
 class HHApiWorker:
 
-    PATH_URL = 'vacancies'
-    URL_HEADERS = {'User-Agent': 'Mozilla/5.0'}
-    LIMIT_OF_VACANCY_DETAIL = 1000
-
     api_params = {'text': 'python middle',
                   'search_field': 'name',
                   'per_page': 25,
@@ -21,8 +17,11 @@ class HHApiWorker:
     df_skills = pd.DataFrame
     df_company_industries = pd.DataFrame
 
-    def __init__(self, endpoint):
-        self.ENDPOINT = endpoint
+    def __init__(self, config):
+        self.ENDPOINT = config['HHApiWorker']['ENDPOINT']
+        self.PATH_URL = config['HHApiWorker']['PATH_URL']
+        self.URL_HEADERS = {config['HHApiWorker']['URL_HEADER_KEY'] : config['HHApiWorker']['URL_HEADER_VALUE']}
+        self.LIMIT_OF_VACANCY_DETAIL = int(config['HHApiWorker']['LIMIT_OF_VACANCY_DETAIL'])
     
     def get_vacancy_ids_in_list(self, data):
         for result in data['items']:

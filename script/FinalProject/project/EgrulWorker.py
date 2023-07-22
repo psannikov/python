@@ -4,16 +4,15 @@ import pandas as pd
 
 
 class EgrulWorker:
-    # Константы, перенести в конфиг файл
-    DICT_KEY_SEARCH = 'СвОКВЭД'
-    OKVED_SEARCH = 'СвОКВЭДОсн'
-    SV_OKVED_KEY_SEARCH = 'КодОКВЭД'
-    SV_OKVED_VALUE_SEARCH = '61'
 
     df_companies = pd.DataFrame()
     count_read_files = 0
 
-    def __init__(self, filename):
+    def __init__(self, config, filename):
+        self.DICT_KEY_SEARCH = config['EgrulWorker']['DICT_KEY_SEARCH']
+        self.OKVED_SEARCH = config['EgrulWorker']['OKVED_SEARCH']
+        self.SV_OKVED_KEY_SEARCH = config['EgrulWorker']['SV_OKVED_KEY_SEARCH']
+        self.SV_OKVED_VALUE_SEARCH = config['EgrulWorker']['SV_OKVED_VALUE_SEARCH']
         self.filename = filename
 
     def prepare_json_data_to_df(self):

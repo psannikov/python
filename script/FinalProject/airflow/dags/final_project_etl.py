@@ -5,20 +5,28 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.utils.task_group import TaskGroup
+import os
+import configparser
 
-sys.path.append("/home/psannikov/project")
+home_directory = os.path.expanduser( '~' )
+project_path = os.path.join(home_directory, 'project')
+setting_path = os.path.join(project_path,'settings.ini')
+
+sys.path.append(project_path)
 from DBWorker import DBWorker
 from EgrulWorker import EgrulWorker
 from HHApiWorker import HHApiWorker
 from SQLWorker import SQLWorker
 from EmailWorker import EmailWorker
 
+config = configparser.ConfigParser()
+config.read(setting_path)
 
-DB_NAME = 'airflow.db'
-TABLE_NAME_COMPANIES = 'companies'
-TABLE_NAME_VACANCIES = 'vacancies'
-TABLE_NAME_SKILLS = 'skills'
-TABLE_NAME_COMPANIES_INDUSTRIES = 'companies_industries'
+DB_NAME = os.path.join (project_path,config['Main']['DB_NAME'])
+TABLE_NAME_COMPANIES = config['Main']['TABLE_NAME_COMPANIES']
+TABLE_NAME_VACANCIES = config['Main']['TABLE_NAME_VACANCIES']
+TABLE_NAME_SKILLS = config['Main']['TABLE_NAME_SKILLS']
+TABLE_NAME_COMPANIES_INDUSTRIES = config['Main']['TABLE_NAME_COMPANIES_INDUSTRIES']
 
 db_worker = DBWorker(DB_NAME)
 
@@ -27,26 +35,25 @@ default_args = {'owner': 'psannikov',
                 'retry_delay': timedelta(minutes=2)}
 
 def read_json_save_to_db():
-     FILENAME =  '/home/psannikov/project/egrul.json.zip'    
-     egrul_parse = EgrulWorker(FILENAME)
+     filename =  os.path.join(project_path,config['Main']['EGRUL_JSON_ZIP_FILENAME'])
+     egrul_parse = EgrulWorker(config, filename)
      egrul_parse.prepare_json_data_to_df()
      db_worker.insert_df_to_db(TABLE_NAME_COMPANIES, egrul_parse.df_companies)
 
 def hh_etl_to_db():
-     ENDPOINT = 'https://api.hh.ru/'
-     hh_api_worker = HHApiWorker(ENDPOINT)
+     hh_api_worker = HHApiWorker(config)
      hh_api_worker.prepare_vacancy_info()
      db_worker.insert_df_to_db(TABLE_NAME_VACANCIES, hh_api_worker.df_vacancy)
      db_worker.insert_df_to_db(TABLE_NAME_SKILLS, hh_api_worker.df_skills)
      db_worker.insert_df_to_db(TABLE_NAME_COMPANIES_INDUSTRIES, hh_api_worker.df_company_industries)
 
 def prepare_report():
-     sql_worker = SQLWorker()
+     sql_worker = SQLWorker(config)
      sql_worker.get_data_from_db_to_pd()
      sql_worker.save_df_to_excel()
 
 def send_email():
-     email_sender = EmailWorker()
+     email_sender = EmailWorker(config)
      email_sender.prepareMessage()
      email_sender.send_mail()
 

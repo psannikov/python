@@ -1,19 +1,22 @@
 import sqlite3
 import pandas as pd
+import os
 
 class SQLWorker:
 
-    TOP_SKILL_IN_ALL_VACANCY = 'top10all.xlsx'
-    TOP_SKILL_IN_VACANCY_BY_INDUSTRY_ID = 'top10industry.xlsx'
-    TOP_SKILL_IN_VACANCY_FILTER_COMPANIES = 'top10okved.xlsx'
-
-    def __init__(self):
+    def __init__(self, config):
+        home_directory = os.path.expanduser( '~' )
+        project_path = os.path.join(home_directory, 'project')
+        self.TOP_SKILL_IN_ALL_VACANCY = os.path.join(project_path, config['SQLWorker']['TOP_SKILL_IN_ALL_VACANCY'])
+        self.TOP_SKILL_IN_VACANCY_BY_INDUSTRY_ID = os.path.join(project_path, config['SQLWorker']['TOP_SKILL_IN_VACANCY_BY_INDUSTRY_ID'])
+        self.TOP_SKILL_IN_VACANCY_FILTER_COMPANIES = os.path.join(project_path, config['SQLWorker']['TOP_SKILL_IN_VACANCY_FILTER_COMPANIES'])
+        self.DB_NAME = os.path.join(project_path, config['Main']['DB_NAME'])
         self.df_skills_in_all = pd.DataFrame()
         self.df_skills_in_industries = pd.DataFrame()
         self.df_skills_in_companies = pd.DataFrame()
 
     def get_data_from_db_to_pd(self):
-        connection = sqlite3.connect('airflow.db')
+        connection = sqlite3.connect(self.DB_NAME)
         select_all = """
         select s.skill,count(1) counts
         from vacancies v
